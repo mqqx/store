@@ -8,8 +8,6 @@ import {
 import {
   INITIAL_STATE_TOKEN,
   InitialState,
-  NGXS_STATE_CONTEXT_FACTORY,
-  NGXS_STATE_FACTORY,
   NgxsBootstrapper,
   StateClass
 } from '@ngxs/store/internals';
@@ -123,14 +121,6 @@ export class NgxsModule {
       {
         provide: INITIAL_STATE_TOKEN,
         useFactory: NgxsModule.getInitialState
-      },
-      {
-        provide: NGXS_STATE_CONTEXT_FACTORY,
-        useExisting: StateContextFactory
-      },
-      {
-        provide: NGXS_STATE_FACTORY,
-        useExisting: StateFactory
       }
     ];
   }
