@@ -22,7 +22,7 @@ describe('Error handling (https://github.com/ngxs/store/issues/1691)', () => {
   const actionError = new RangeError('Custom NGXS error');
 
   @State({
-    name: 'app'
+    name: 'app',
   })
   class AppState {
     @Action(ProduceErrorSynchronously)
@@ -55,8 +55,14 @@ describe('Error handling (https://github.com/ngxs/store/issues/1691)', () => {
   }
 
   @NgModule({
-    imports: [BrowserModule, NgxsModule.forRoot([AppState])],
-    providers: [CustomErrorHandler, { provide: ErrorHandler, useExisting: CustomErrorHandler }]
+    imports: [
+      BrowserModule,
+      NgxsModule.forRoot([AppState], { useLegacyErrorHandlingMechanism: false }),
+    ],
+    providers: [
+      CustomErrorHandler,
+      { provide: ErrorHandler, useExisting: CustomErrorHandler },
+    ],
   })
   class TestModule implements DoBootstrap {
     ngDoBootstrap(): void {
@@ -95,7 +101,7 @@ describe('Error handling (https://github.com/ngxs/store/issues/1691)', () => {
         expect(errorHandler.caughtErrorsByErrorHandler).toEqual([
           actionError,
           actionError,
-          actionError
+          actionError,
         ]);
       })
     );
@@ -130,7 +136,7 @@ describe('Error handling (https://github.com/ngxs/store/issues/1691)', () => {
         expect(errorHandler.caughtErrorsByErrorHandler).toEqual([
           actionError,
           actionError,
-          actionError
+          actionError,
         ]);
       })
     );
@@ -149,7 +155,7 @@ describe('Error handling (https://github.com/ngxs/store/issues/1691)', () => {
 
         // Act
         store.dispatch(new ProduceErrorSynchronously()).subscribe({
-          error: error => caughtErrors.push(error)
+          error: error => caughtErrors.push(error),
         });
         await macrotask();
         // Assert
@@ -158,7 +164,7 @@ describe('Error handling (https://github.com/ngxs/store/issues/1691)', () => {
 
         // Act
         store.dispatch(new ProduceErrorSynchronouslyInStream()).subscribe({
-          error: error => caughtErrors.push(error)
+          error: error => caughtErrors.push(error),
         });
         await macrotask();
         // Assert
@@ -167,7 +173,7 @@ describe('Error handling (https://github.com/ngxs/store/issues/1691)', () => {
 
         // Act
         store.dispatch(new ProduceErrorAsynchronously()).subscribe({
-          error: error => caughtErrors.push(error)
+          error: error => caughtErrors.push(error),
         });
         await macrotask();
         // Assert

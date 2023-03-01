@@ -29,7 +29,7 @@ describe('Development Mode', () => {
     it('should not give errors for normal operation', () => {
       @State<StateModel>({
         name: 'counter',
-        defaults: { count: 0 }
+        defaults: { count: 0 },
       })
       @Injectable()
       class MyStore {
@@ -40,7 +40,7 @@ describe('Development Mode', () => {
       }
 
       TestBed.configureTestingModule({
-        imports: [NgxsModule.forRoot([MyStore], { developmentMode: false })]
+        imports: [NgxsModule.forRoot([MyStore], { developmentMode: false })],
       });
 
       const store: Store = TestBed.inject(Store);
@@ -49,7 +49,7 @@ describe('Development Mode', () => {
       store.dispatch(new Increment()).subscribe({
         next: () => observedCallbacks.push('next'),
         error: error => observedCallbacks.push('error: ' + error),
-        complete: () => observedCallbacks.push('complete')
+        complete: () => observedCallbacks.push('complete'),
       });
 
       expect(observedCallbacks).toEqual(['next', 'complete']);
@@ -58,7 +58,7 @@ describe('Development Mode', () => {
     it('should not give an error if the default state is mutated by a handler', () => {
       @State<StateModel>({
         name: 'counter',
-        defaults: { count: 0 }
+        defaults: { count: 0 },
       })
       @Injectable()
       class MyStore {
@@ -75,7 +75,7 @@ describe('Development Mode', () => {
 
       TestBed.configureTestingModule({
         imports: [NgxsModule.forRoot([MyStore], { developmentMode: false })],
-        providers: [{ provide: ErrorHandler, useClass: NoopErrorHandler }]
+        providers: [{ provide: ErrorHandler, useClass: NoopErrorHandler }],
       });
 
       const store: Store = TestBed.inject(Store);
@@ -84,7 +84,7 @@ describe('Development Mode', () => {
       store.dispatch(new Increment()).subscribe({
         next: () => observedCallbacks.push('next'),
         error: error => observedCallbacks.push('error: ' + error),
-        complete: () => observedCallbacks.push('complete')
+        complete: () => observedCallbacks.push('complete'),
       });
 
       expect(observedCallbacks).toEqual(['next', 'complete']);
@@ -95,7 +95,7 @@ describe('Development Mode', () => {
     it('should not give errors for normal operation', () => {
       @State<StateModel>({
         name: 'counter',
-        defaults: { count: 0 }
+        defaults: { count: 0 },
       })
       @Injectable()
       class MyStore {
@@ -106,7 +106,7 @@ describe('Development Mode', () => {
       }
 
       TestBed.configureTestingModule({
-        imports: [NgxsModule.forRoot([MyStore], { developmentMode: true })]
+        imports: [NgxsModule.forRoot([MyStore], { developmentMode: true })],
       });
 
       const store: Store = TestBed.inject(Store);
@@ -115,7 +115,7 @@ describe('Development Mode', () => {
       store.dispatch(new Increment()).subscribe({
         next: () => observedCallbacks.push('next'),
         error: error => observedCallbacks.push('error: ' + error),
-        complete: () => observedCallbacks.push('complete')
+        complete: () => observedCallbacks.push('complete'),
       });
 
       expect(observedCallbacks).toEqual(['next', 'complete']);
@@ -127,7 +127,7 @@ describe('Development Mode', () => {
         // Arrange
         @State<StateModel>({
           name: 'counter',
-          defaults: { count: 0 }
+          defaults: { count: 0 },
         })
         @Injectable()
         class MyStore {
@@ -148,13 +148,19 @@ describe('Development Mode', () => {
         }
 
         @NgModule({
-          imports: [BrowserModule, NgxsModule.forRoot([MyStore], { developmentMode: true })],
+          imports: [
+            BrowserModule,
+            NgxsModule.forRoot([MyStore], {
+              developmentMode: true,
+              useLegacyErrorHandlingMechanism: false,
+            }),
+          ],
           providers: [
             {
               provide: ErrorHandler,
-              useClass: CustomErrorHandler
-            }
-          ]
+              useClass: CustomErrorHandler,
+            },
+          ],
         })
         class TestModule implements DoBootstrap {
           ngDoBootstrap(): void {
@@ -167,7 +173,7 @@ describe('Development Mode', () => {
 
         // Assert
         expect(observedErrors).toEqual([
-          `error: TypeError: Cannot assign to read only property 'count' of object '[object Object]'`
+          `error: TypeError: Cannot assign to read only property 'count' of object '[object Object]'`,
         ]);
       })
     );
@@ -178,7 +184,7 @@ describe('Development Mode', () => {
         // Arrange
         @State<StateModel>({
           name: 'counter',
-          defaults: { count: 0 }
+          defaults: { count: 0 },
         })
         @Injectable()
         class MyStore {
@@ -201,15 +207,18 @@ describe('Development Mode', () => {
         @NgModule({
           imports: [
             BrowserModule,
-            NgxsModule.forRoot([], { developmentMode: true }),
-            NgxsModule.forFeature([MyStore])
+            NgxsModule.forRoot([], {
+              developmentMode: true,
+              useLegacyErrorHandlingMechanism: false,
+            }),
+            NgxsModule.forFeature([MyStore]),
           ],
           providers: [
             {
               provide: ErrorHandler,
-              useClass: CustomErrorHandler
-            }
-          ]
+              useClass: CustomErrorHandler,
+            },
+          ],
         })
         class TestModule implements DoBootstrap {
           ngDoBootstrap(): void {
@@ -222,7 +231,7 @@ describe('Development Mode', () => {
 
         // Assert
         expect(observedErrors).toEqual([
-          `error: TypeError: Cannot assign to read only property 'count' of object '[object Object]'`
+          `error: TypeError: Cannot assign to read only property 'count' of object '[object Object]'`,
         ]);
       })
     );
@@ -230,7 +239,7 @@ describe('Development Mode', () => {
     it('should give an error if the default state is mutated by a handler', () => {
       @State<StateModel>({
         name: 'counter',
-        defaults: { count: 0 }
+        defaults: { count: 0 },
       })
       @Injectable()
       class MyStore {
@@ -247,7 +256,7 @@ describe('Development Mode', () => {
 
       TestBed.configureTestingModule({
         imports: [NgxsModule.forRoot([MyStore], { developmentMode: true })],
-        providers: [{ provide: ErrorHandler, useClass: NoopErrorHandler }]
+        providers: [{ provide: ErrorHandler, useClass: NoopErrorHandler }],
       });
 
       const store: Store = TestBed.inject(Store);
@@ -256,11 +265,11 @@ describe('Development Mode', () => {
       store.dispatch(new Increment()).subscribe({
         next: () => observedCallbacks.push('next'),
         error: error => observedCallbacks.push('error: ' + error),
-        complete: () => observedCallbacks.push('complete')
+        complete: () => observedCallbacks.push('complete'),
       });
 
       expect(observedCallbacks).toEqual([
-        `error: TypeError: Cannot assign to read only property 'count' of object '[object Object]'`
+        `error: TypeError: Cannot assign to read only property 'count' of object '[object Object]'`,
       ]);
     });
 
@@ -271,7 +280,7 @@ describe('Development Mode', () => {
 
       @State<StateModel>({
         name: 'counter',
-        defaults: { count: 0 }
+        defaults: { count: 0 },
       })
       @Injectable()
       class MyStore {
@@ -293,7 +302,7 @@ describe('Development Mode', () => {
 
       TestBed.configureTestingModule({
         imports: [NgxsModule.forRoot([MyStore], { developmentMode: true })],
-        providers: [{ provide: ErrorHandler, useClass: NoopErrorHandler }]
+        providers: [{ provide: ErrorHandler, useClass: NoopErrorHandler }],
       });
 
       const store: Store = TestBed.inject(Store);
@@ -303,18 +312,18 @@ describe('Development Mode', () => {
       store.dispatch(new Increment()).subscribe({
         next: () => observedCallbacks.push('next'),
         error: error => observedCallbacks.push('error: ' + error),
-        complete: () => observedCallbacks.push('complete')
+        complete: () => observedCallbacks.push('complete'),
       });
 
       expect(observedCallbacks).toEqual([
-        `error: TypeError: Cannot assign to read only property 'count' of object '[object Object]'`
+        `error: TypeError: Cannot assign to read only property 'count' of object '[object Object]'`,
       ]);
     });
 
     it('should give an error if the state returned by a store select is mutated', () => {
       @State<StateModel>({
         name: 'counter',
-        defaults: { count: 0 }
+        defaults: { count: 0 },
       })
       @Injectable()
       class MyStore {
@@ -326,7 +335,7 @@ describe('Development Mode', () => {
 
       TestBed.configureTestingModule({
         imports: [NgxsModule.forRoot([MyStore], { developmentMode: true })],
-        providers: [{ provide: ErrorHandler, useClass: NoopErrorHandler }]
+        providers: [{ provide: ErrorHandler, useClass: NoopErrorHandler }],
       });
 
       const store: Store = TestBed.inject(Store);
@@ -346,7 +355,7 @@ describe('Development Mode', () => {
     it('should give an error if the state returned by a selector is mutated', () => {
       @State<{ inner: StateModel }>({
         name: 'counter',
-        defaults: { inner: { count: 0 } }
+        defaults: { inner: { count: 0 } },
       })
       @Injectable()
       class MyStore {
@@ -358,7 +367,7 @@ describe('Development Mode', () => {
 
       TestBed.configureTestingModule({
         imports: [NgxsModule.forRoot([MyStore], { developmentMode: true })],
-        providers: [{ provide: ErrorHandler, useClass: NoopErrorHandler }]
+        providers: [{ provide: ErrorHandler, useClass: NoopErrorHandler }],
       });
 
       const store: Store = TestBed.inject(Store);
@@ -377,14 +386,14 @@ describe('Development Mode', () => {
     it('should give an error if a state snapshot is mutated', () => {
       @State<StateModel>({
         name: 'counter',
-        defaults: { count: 0 }
+        defaults: { count: 0 },
       })
       @Injectable()
       class MyStore {}
 
       TestBed.configureTestingModule({
         imports: [NgxsModule.forRoot([MyStore], { developmentMode: true })],
-        providers: [{ provide: ErrorHandler, useClass: NoopErrorHandler }]
+        providers: [{ provide: ErrorHandler, useClass: NoopErrorHandler }],
       });
 
       const store: Store = TestBed.inject(Store);
@@ -402,8 +411,9 @@ describe('Development Mode', () => {
     xit('should give an error if the action is mutated by a handler', () => {
       @State<StateModel>({
         name: 'counter',
-        defaults: { count: 0 }
+        defaults: { count: 0 },
       })
+      @Injectable()
       class MyStore {
         @Action(Increment)
         mutatingIncrement(
@@ -417,7 +427,7 @@ describe('Development Mode', () => {
 
       TestBed.configureTestingModule({
         imports: [NgxsModule.forRoot([MyStore], { developmentMode: true })],
-        providers: [{ provide: ErrorHandler, useClass: NoopErrorHandler }]
+        providers: [{ provide: ErrorHandler, useClass: NoopErrorHandler }],
       });
 
       const store: Store = TestBed.inject(Store);
@@ -426,11 +436,11 @@ describe('Development Mode', () => {
       store.dispatch(new Increment()).subscribe({
         next: () => observedCallbacks.push('next'),
         error: error => observedCallbacks.push('error: ' + error),
-        complete: () => observedCallbacks.push('complete')
+        complete: () => observedCallbacks.push('complete'),
       });
 
       expect(observedCallbacks).toEqual([
-        `error: TypeError: Cannot assign to read only property 'amount' of object '[object Object]'`
+        `error: TypeError: Cannot assign to read only property 'amount' of object '[object Object]'`,
       ]);
     });
 
@@ -441,8 +451,9 @@ describe('Development Mode', () => {
 
       @State<StateModel>({
         name: 'counter',
-        defaults: { count: 0 }
+        defaults: { count: 0 },
       })
+      @Injectable()
       class MyStore {
         @Action(Start)
         start({ dispatch }: StateContext<StateModel>) {
@@ -461,7 +472,7 @@ describe('Development Mode', () => {
 
       TestBed.configureTestingModule({
         imports: [NgxsModule.forRoot([MyStore], { developmentMode: true })],
-        providers: [{ provide: ErrorHandler, useClass: NoopErrorHandler }]
+        providers: [{ provide: ErrorHandler, useClass: NoopErrorHandler }],
       });
 
       const store: Store = TestBed.inject(Store);
@@ -470,11 +481,11 @@ describe('Development Mode', () => {
       store.dispatch(new Start()).subscribe({
         next: () => observedCallbacks.push('next'),
         error: error => observedCallbacks.push('error: ' + error),
-        complete: () => observedCallbacks.push('complete')
+        complete: () => observedCallbacks.push('complete'),
       });
 
       expect(observedCallbacks).toEqual([
-        `error: TypeError: Cannot assign to read only property 'amount' of object '[object Object]'`
+        `error: TypeError: Cannot assign to read only property 'amount' of object '[object Object]'`,
       ]);
     });
   });

@@ -1,8 +1,10 @@
-import { Injectable } from '@angular/core';
+import { ErrorHandler, Injectable, Injector } from '@angular/core';
 import { EMPTY, forkJoin, Observable, of, Subject, throwError } from 'rxjs';
 import { exhaustMap, filter, shareReplay, take } from 'rxjs/operators';
 
+import { NgxsConfig } from '../symbols';
 import { compose } from '../utils/compose';
+import { leaveNgxs } from '../operators/leave-ngxs';
 import { InternalErrorReporter, ngxsErrorHandler } from './error-handler';
 import { ActionContext, ActionStatus, InternalActions } from '../actions-stream';
 import { StateStream } from './state-stream';
@@ -21,13 +23,17 @@ export class InternalDispatchedActionResults extends Subject<ActionContext> {}
 
 @Injectable()
 export class InternalDispatcher {
+  private _errorHandler: ErrorHandler;
+
   constructor(
+    private _injector: Injector,
     private _actions: InternalActions,
     private _actionResults: InternalDispatchedActionResults,
     private _pluginManager: PluginManager,
     private _stateStream: StateStream,
     private _ngxsExecutionStrategy: InternalNgxsExecutionStrategy,
-    private _internalErrorReporter: InternalErrorReporter
+    private _internalErrorReporter: InternalErrorReporter,
+    private _config: NgxsConfig
   ) {}
 
   /**
@@ -38,9 +44,24 @@ export class InternalDispatcher {
       this.dispatchByEvents(actionOrActions)
     );
 
-    return result.pipe(
-      ngxsErrorHandler(this._internalErrorReporter, this._ngxsExecutionStrategy)
-    );
+    if (this._config.useLegacyErrorHandlingMechanism) {
+      result.subscribe({
+        error: error =>
+          this._ngxsExecutionStrategy.leave(() => {
+            try {
+              // Retrieve lazily to avoid cyclic dependency exception
+              this._errorHandler = this._errorHandler || this._injector.get(ErrorHandler);
+              this._errorHandler.handleError(error);
+            } catch {}
+          }),
+      });
+
+      return result.pipe(leaveNgxs(this._ngxsExecutionStrategy));
+    } else {
+      return result.pipe(
+        ngxsErrorHandler(this._internalErrorReporter, this._ngxsExecutionStrategy)
+      );
+    }
   }
 
   private dispatchByEvents(actionOrActions: any | any[]): Observable<any> {
@@ -66,18 +87,20 @@ export class InternalDispatcher {
     const prevState = this._stateStream.getValue();
     const plugins = this._pluginManager.plugins;
 
-    return (compose([
-      ...plugins,
-      (nextState: any, nextAction: any) => {
-        if (nextState !== prevState) {
-          this._stateStream.next(nextState);
-        }
-        const actionResult$ = this.getActionResultStream(nextAction);
-        actionResult$.subscribe(ctx => this._actions.next(ctx));
-        this._actions.next({ action: nextAction, status: ActionStatus.Dispatched });
-        return this.createDispatchObservable(actionResult$);
-      }
-    ])(prevState, action) as Observable<any>).pipe(shareReplay());
+    return (
+      compose([
+        ...plugins,
+        (nextState: any, nextAction: any) => {
+          if (nextState !== prevState) {
+            this._stateStream.next(nextState);
+          }
+          const actionResult$ = this.getActionResultStream(nextAction);
+          actionResult$.subscribe(ctx => this._actions.next(ctx));
+          this._actions.next({ action: nextAction, status: ActionStatus.Dispatched });
+          return this.createDispatchObservable(actionResult$);
+        },
+      ])(prevState, action) as Observable<any>
+    ).pipe(shareReplay());
   }
 
   private getActionResultStream(action: any): Observable<ActionContext> {

@@ -70,12 +70,21 @@ export class NgxsConfig {
    */
   selectorOptions: SharedSelectorOptions = {
     injectContainerState: true, // TODO: default is true in v3, will change in v4
-    suppressErrors: true // TODO: default is true in v3, will change in v4
+    suppressErrors: true, // TODO: default is true in v3, will change in v4
   };
+
+  /**
+   * Determines whether errors from actions should be caught explicitly through
+   * `subscribe({ error: () => ... })`. The explicit error-handling mechanism is
+   * not deterministic and might lead to errors being logged multiple times.
+   * This may happen if Angular's zone catches an error and calls `ErrorHandler`
+   * accordingly. But we may capture this error and call the `ErrorHandler` too.
+   */
+  useLegacyErrorHandlingMechanism = true;
 
   constructor() {
     this.compatibility = {
-      strictContentSecurityPolicy: false
+      strictContentSecurityPolicy: false,
     };
     this.executionStrategy = DispatchOutsideZoneNgxsExecutionStrategy;
   }
